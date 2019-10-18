@@ -14,7 +14,6 @@ import MonetizationOn from '@material-ui/icons/MonetizationOn';
 import Call from '@material-ui/icons/Call';
 import Language from '@material-ui/icons/Language';
 import Appbar from '../component/Appbar';
-import "../css/restaurantDetail.css"
 import Axios from 'axios';
 import { Button } from '@material-ui/core';
 
