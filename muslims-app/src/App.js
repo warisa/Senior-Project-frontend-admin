@@ -7,6 +7,8 @@ import {
 
 import Index from "./page/index"
 import Login from "./page/login"
+import Restaurant from "./page/restaurant"
+import RestaurantDetail from "./page/restaurantDetail";
 
 export default function App() {
   return (
@@ -17,6 +19,12 @@ export default function App() {
           </Route>
           <Route path="/login">
             <Login />
+          </Route>
+          <Route path="/restaurant">
+            <Restaurant />
+          </Route>
+          <Route path="/restaurantDetail/:id">
+            <RestaurantDetail />
           </Route>
         </Switch>
     </Router>
