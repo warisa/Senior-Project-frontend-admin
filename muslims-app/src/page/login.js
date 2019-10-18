@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import '../css/App.css';
 import Button from '@material-ui/core/Button';
+import Axios from 'axios';
 
 export default class login extends Component {
   constructor(props) {
@@ -22,10 +23,19 @@ export default class login extends Component {
       })(document, "script", "facebook-jssdk");
   }
 
-  loginFacebook(){
+  async loginFacebook(){
     window.FB.login(
         result =>{
-            console.log(result)
+            Axios.post('http://10.4.56.94/adminlogin', { facebookToken: result.authResponse.accessToken })
+            .then(response => {
+              if(response.data=!"" & response.data !=null) {
+                localStorage.setItem("userId", response.data);
+                window.location.replace("/")
+              }
+            })
+            .catch(error => {
+              console.log(error);
+            });
         }
         ,{ scope: "public_profile,email" }
     )
@@ -34,7 +44,7 @@ export default class login extends Component {
   render() {
     return (
         <div>
-            <header className="App-header" style={{backgroundColor:'#FF8200'}}>
+            <header className="App-header">
                 <img src="../images/app_logo.png" className="App-logo" alt="app_logo" />
                 <Button onClick={()=>{this.loginFacebook()}} variant="contained" color="primary" style={{backgroundColor:'#3b5998'}}>
                     <img src="../images/facebook.png" height="33px" alt="facebook"/>
