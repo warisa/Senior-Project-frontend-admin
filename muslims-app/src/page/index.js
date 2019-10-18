@@ -5,14 +5,12 @@ import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import "../css/Index.css";
 
-export default class index extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-    };
+function index () {
+    
+  const changePage = (page) => {
+    window.location.replace(page)
   }
-
-  render() {
+   
     return (
         <div className="index">
           <Appbar/>
@@ -25,9 +23,9 @@ export default class index extends Component {
               size="large"
               aria-label="large contained secondary button group"
             >
-                <Button style={{backgroundColor:'#CC6633'}}>Restaurant</Button>
-                <Button style={{backgroundColor:'#CC6633'}}>Pray Place</Button>
-                <Button style={{backgroundColor:'#CC6633'}}>History</Button>
+                <Button onClick={()=>{changePage('/restaurant')}} style={{backgroundColor:'#CC6633'}}>Restaurant</Button>
+                <Button onClick={()=>{changePage('/')}} style={{backgroundColor:'#CC6633'}}>Pray Place</Button>
+                <Button onClick={()=>{changePage('/')}} style={{backgroundColor:'#CC6633'}}>History</Button>
               </ButtonGroup>
             </Grid>
           </Grid>
@@ -38,5 +36,6 @@ export default class index extends Component {
             </center>
         </div>
     );
-  }
 }
+
+export default index;
