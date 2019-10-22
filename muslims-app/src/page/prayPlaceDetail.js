@@ -10,7 +10,7 @@ import Description from '@material-ui/icons/Description';
 import LocationCity from '@material-ui/icons/LocationCity';
 import AccessTime from '@material-ui/icons/AccessTime';
 import WatchLater from '@material-ui/icons/WatchLater';
-import MonetizationOn from '@material-ui/icons/MonetizationOn';
+import Input from '@material-ui/core/Input';
 import Call from '@material-ui/icons/Call';
 import Language from '@material-ui/icons/Language';
 import DriveEta from '@material-ui/icons/DriveEta';
@@ -34,11 +34,15 @@ import Grid from '@material-ui/core/Grid';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-
-
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import GridListTileBar from '@material-ui/core/GridListTileBar';
+import DeleteForever from '@material-ui/icons/DeleteForever';
+import IconButton from '@material-ui/core/IconButton';
+import Chip from '@material-ui/core/Chip';
+import storage from "../firebase/index";
 import { useParams } from "react-router-dom";
 
 const useStyles = makeStyles((theme) =>
@@ -62,6 +66,35 @@ const useStyles = makeStyles((theme) =>
     },
     selectEmpty: {
       marginTop: theme.spacing(2),
+    },
+    title: {
+      color: theme.palette.primary.light,
+    },
+    titleBar: {
+      background:
+        'linear-gradient(to top, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+    },
+    icon: {
+      color: 'red',
+    },
+    image: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      justifyContent: 'space-around',
+      overflow: 'hidden',
+      backgroundColor: theme.palette.background.paper,
+    },
+    gridList: {
+      flexWrap: 'nowrap',
+      // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
+      transform: 'translateZ(0)',
+    },
+    chips: {
+      display: 'flex',
+      flexWrap: 'wrap',
+    },
+    chip: {
+      margin: 2,
     }
   }),
 );
@@ -69,6 +102,7 @@ const useStyles = makeStyles((theme) =>
 function PrayPlaceDetail()  {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
+    const [loading, setLoading] = React.useState(0);
     let { id } = useParams();
     const [prayPlaceDetail,setPrayPlaceDetail] = useState(
         {
@@ -97,7 +131,7 @@ function PrayPlaceDetail()  {
         }
       )
 
-      const [restaurantDetailEdit,setRestaurantDetailEdit] = useState(
+      const [prayPlaceDetailEdit,setprayPlaceDetailEdit] = useState(
         {
             placeId: 29,
             placeName: "Home Cuisine Lslamic Restaurant",
@@ -119,6 +153,13 @@ function PrayPlaceDetail()  {
             placeTypeId: 1,
             userId: 2,
             status: "Checking",
+            Monday: 0,
+            Tuesday: 1,
+            Wednesday: 0,
+            Thursday: 1,
+            Friday: 0,
+            Saturday: 1,
+            Sunday: 0,
             imageId: 71,
             imageName: "https://firebasestorage.googleapis.com/v0/b/daily-life-of-muslims.appspot.com/o/posts%2F2%2F3082019%3A1338515-IMG_20190929_192320.jpg?alt=media&token=a021256e-d008-465c-bf25-96291deb9b12"
         }
@@ -137,6 +178,44 @@ function PrayPlaceDetail()  {
           categoryName:[]
         }]
       )
+      
+      const [prayPlaceCategoryEdit,setprayPlaceCategoryEdit] = useState([])
+
+
+      const [menu, setMenu] = useState([
+        {
+          categoryId: 1,
+          categoryName: "Pizza",
+          categoryImage: "https://firebasestorage.googleapis.com/v0/b/daily-life-of-muslims.appspot.com/o/pizza.png?alt=media&token=ec927d9b-45ef-467d-bce3-c075f6b28cb8",
+          placeTypeId: 1,
+          placeType: "restaurant"
+        }
+      ])
+      
+      const ITEM_HEIGHT = 48;
+      const ITEM_PADDING_TOP = 8;
+      const MenuProps = {
+        PaperProps: {
+          style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+          },
+        },
+      };
+
+      const getMenuData = (value) =>{
+        for(var i = 0; i < menu.length; i++){
+          if(menu[i].categoryId==value){
+            return menu[i].categoryName;
+          }
+        }
+      }
+
+      const getMenus = async () =>{
+        const response =  await Axios.get('http://10.4.56.94/category2/2');
+        console.log(response.data)
+        setMenu(response.data);
+      }
 
       const getDetail = async () =>{
         const response =  await Axios.get('http://10.4.56.94/placeDetailData/'+ id);
@@ -184,6 +263,166 @@ function PrayPlaceDetail()  {
           }
         })
       }
+      
+      const submitprayPlaceEdit = async () => {
+        var formData = {
+          placeId: prayPlaceDetailEdit.placeId,
+          placeName: prayPlaceDetailEdit.placeName,
+          placeOpeningTime: prayPlaceDetailEdit.placeOpeningTime,
+          placeClosingTime: prayPlaceDetailEdit.placeClosingTime,
+          placeTelno: prayPlaceDetailEdit.placeTelno,
+          placeDescription: prayPlaceDetailEdit.placeDescription,
+          placePriceRange: prayPlaceDetailEdit.placePriceRange,
+          placeCarParking: prayPlaceDetailEdit.placeCarParking,
+          placePrayerRoom: prayPlaceDetailEdit.placePrayerRoom,
+          placeAirconditioner: prayPlaceDetailEdit.placeAirconditioner,
+          placeAddress: prayPlaceDetailEdit.placeAddress,
+          latitude: prayPlaceDetailEdit.latitude,
+          longitude: prayPlaceDetailEdit.longitude,
+          Monday: prayPlaceDetailEdit.Monday,
+          Tuesday: prayPlaceDetailEdit.Tuesday,
+          Wednesday: prayPlaceDetailEdit.Wednesday,
+          Thursday: prayPlaceDetailEdit.Thursday,
+          Friday: prayPlaceDetailEdit.Friday,
+          Saturday: prayPlaceDetailEdit.Saturday,
+          Sunday: prayPlaceDetailEdit.Sunday,
+          placeTypeId: 2,
+          categoryId: prayPlaceCategoryEdit
+        }
+        await Axios.put('http://10.4.56.94/updateDataPrayPlace/'+ id, formData)
+        .then((value) => {
+          console.log(value.status)
+          if(value.status==200){
+            setOpen(false);
+            getMenus();
+            getDetail();
+            getImage();
+            getCategory();
+            Swal.fire(
+              'Success!',
+              '',
+              'success'
+            )
+          }
+        })
+      }
+
+      const deleteImageRestaurant = async (valueId) => {
+        Swal.fire({
+          title: 'Are you sure ?',
+          text: "You won't be able to revert this!",
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+          if (result.value) {
+            var formData = {
+              placeId: id,
+              imageId: valueId
+            }
+            await Axios.delete('http://10.4.56.94/deleteImage/'+ id, { data: formData }).then((value) => {
+              console.log(value.status)
+              if(value.status==200){
+                setOpen(false);
+                getMenus();
+                getDetail();
+                getImage();
+                getCategory();
+                Swal.fire(
+                  'Success!',
+                  '',
+                  'success'
+                )
+              }
+            })
+          }
+        })
+      }
+
+      const addImageRestaurant = async () => {
+        const { value: file } = await Swal.fire({
+          title: 'Select image',
+          input: 'file',
+          inputAttributes: {
+            accept: 'image/*',
+            'aria-label': 'Upload your profile picture'
+          }
+        })
+        
+        if (file) {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            Swal.fire({
+              title: 'Are you sure?',
+              imageUrl: e.target.result,
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, submit it!'
+            }).then(async (result) => {
+              if (result.value) {
+                setLoading(0)
+                console.log(file)
+                console.log(file.name)
+                var date = new Date().getDate();
+                var month = new Date().getMonth();
+                var year = new Date().getFullYear();
+                var hours = new Date().getHours();
+                var minutes = new Date().getUTCMinutes();
+                var seconds = new Date().getMilliseconds();
+                const uploadTask = storage.ref(`images/`+ date + month + year + ":" + hours + minutes + seconds + '-' + file.name).put(file);
+                uploadTask.on(
+                  "state_changed",
+                  snapshot => {
+                    const progress = Math.round(
+                      (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                    );
+                    console.log(progress)
+                    setLoading(progress)
+                  },
+                  error => {
+                    console.log(error);
+                  },
+                  () => {
+                    storage
+                      .ref(`images/`+ date + month + year + ":" + hours + minutes + seconds + '-' + file.name)
+                      .getDownloadURL()
+                      .then(async (url) => {
+                        console.log('==========================================================')
+                        console.log(url)
+                        console.log('==========================================================')
+                        var formData = {
+                          placeId: id,
+                          imageName: url
+                        }
+                        console.log(formData)
+                        await Axios.post('http://10.4.56.94/addImage/'+ id, formData)
+                        .then((value) => {
+                          console.log(value.status)
+                          if(value.status==200){
+                            getMenus();
+                            getDetail();
+                            getImage();
+                            getCategory();
+                            setLoading(0)
+                            Swal.fire(
+                              'Success!',
+                              '',
+                              'success'
+                            )
+                          }
+                        })
+                      });
+                  }
+                );
+              }
+            })
+          }
+          reader.readAsDataURL(file)
+        }
+      }
 
       const deleteRestaurant = async () => {
         Swal.fire({
@@ -209,8 +448,15 @@ function PrayPlaceDetail()  {
           }
         })
       }
+
       const handleClickOpen = () => {
         setOpen(true);
+        setprayPlaceDetailEdit(prayPlaceDetail)
+        var data = []
+        for(var i = 0; i < prayPlaceCategory.length; i++){
+          data.push(prayPlaceCategory[i].categoryId);
+        }
+        setprayPlaceCategoryEdit(data)
       };
     
       const handleClose = () => {
@@ -218,6 +464,7 @@ function PrayPlaceDetail()  {
       };
 
       useEffect(()=>{
+        getMenus();
         getDetail();
         getImage();
         getCategory();
@@ -250,7 +497,7 @@ function PrayPlaceDetail()  {
               <Typography className={classes.heading}><Description/> &nbsp; Category:</Typography>
               {
                 prayPlaceCategory.map( data =>
-                  <Typography className={classes.secondaryHeading}>{data.categoryName + ","}</Typography> 
+                  <Typography className={classes.secondaryHeading}>{data.categoryName } &nbsp; </Typography> 
               )}
             </ListItem> 
             <Divider/>
@@ -416,13 +663,48 @@ function PrayPlaceDetail()  {
               }
             </ListItem>
             <Divider/>
+            <ListItem>
+              <Grid item xs={10}>
+              </Grid>
+              <Grid item xs={2}>
+                <Button variant="contained" color="primary" onClick={()=>{addImageRestaurant()}} >
+                  {
+                    loading == 0 ? <div>add image</div> : <div> {loading} %</div>
+                  }
+                </Button>
+                </Grid>
+              </ListItem>
             <ListItem >
-              <Typography className={classes.heading}> <LocationOn/> Image: </Typography>
-              {
-                prayPlaceImage.map( data =>
-                <img src={data.imageName} style={{width:200,height:150}}/>
-              )}
-            </ListItem>
+              <GridList className={classes.gridList} cols={2.5}>
+                {prayPlaceImage.map(data => (
+                  <GridListTile key={data.imageId}>
+                    <img src={data.imageName} alt={data.imageId}/>
+                    {/* <GridListTileBar
+                      title="DELETE"
+                      classes={{
+                        image: classes.titleBar,
+                        title: classes.title,
+                      }}
+                      actionIcon={
+                        <IconButton>
+                          <StarBorderIcon className={classes.title} />
+                        </IconButton>
+                      }
+                    /> */}
+                    <GridListTileBar
+                      titlePosition="top"
+                      actionIcon={
+                        <IconButton className={classes.icon} onClick={()=>{deleteImageRestaurant(data.imageId)}}>
+                          <DeleteForever/>
+                        </IconButton>
+                      }
+                      actionPosition="right"
+                      className={classes.titleBar}
+                    />
+                  </GridListTile>
+                ))}
+                  </GridList>
+                </ListItem>
           </List>
         </Container>
         <center>
@@ -442,7 +724,13 @@ function PrayPlaceDetail()  {
                     margin="dense"
                     label="Name"
                     type="text"
-                    value={restaurantDetailEdit.placeName}
+                    value={prayPlaceDetailEdit.placeName}
+                    onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, placeName: val }
+                      })
+                    }}
                     fullWidth
                   />
                 </Grid>
@@ -452,9 +740,44 @@ function PrayPlaceDetail()  {
                     margin="dense"
                     label="Description"
                     type="text"
-                    value={restaurantDetailEdit.placeDescription}
+                    value={prayPlaceDetailEdit.placeDescription}
+                    onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, placeDescription: val }
+                      })
+                    }}
                     fullWidth
                   />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControl className={classes.formControl} fullWidth>
+                      <InputLabel>Category</InputLabel>
+                      <Select 
+                        multiple
+                        value={prayPlaceCategoryEdit}
+                        input={<Input id="select-multiple-checkbox" />}
+                        renderValue={selected => (
+                          <div className={classes.chips}>
+                            {(selected).map(value => (
+                              <Chip key={value} label={getMenuData(value)} className={classes.chip} />
+                            ))}
+                          </div>
+                        )}
+                        MenuProps={MenuProps}
+                        onChange={(e)=> {
+                          console.log(e)
+                          const val = e.target.value;
+                          setprayPlaceCategoryEdit(val)
+                        }}
+                      >
+                        {menu.map(data => (
+                          <MenuItem key={data.categoryId} value={data.categoryId}>
+                            {data.categoryName}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                  </FormControl>
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
@@ -463,7 +786,13 @@ function PrayPlaceDetail()  {
                   id="name"
                   label="Address"
                   type="email"
-                  value={restaurantDetailEdit.placeAddress}
+                  value={prayPlaceDetailEdit.placeAddress}
+                  onChange={(e)=> {
+                    const val = e.target.value;
+                    setprayPlaceDetailEdit(prevState => {
+                      return { ...prevState, placeAddress: val }
+                    })
+                  }}
                   fullWidth
                 />
                 </Grid>
@@ -472,8 +801,14 @@ function PrayPlaceDetail()  {
                     autoFocus
                     margin="dense"
                     label="Opening Time"
-                    type="text"
-                    value={restaurantDetailEdit.placeOpeningTime}
+                    type="time"
+                    value={prayPlaceDetailEdit.placeOpeningTime}
+                    onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, placeOpeningTime: val }
+                      })
+                    }}
                     fullWidth
                   /> 
                 </Grid>
@@ -482,55 +817,74 @@ function PrayPlaceDetail()  {
                     autoFocus
                     margin="dense"
                     label="Closing Time"
-                    type="text"
-                    value={restaurantDetailEdit.placeClosingTime}
+                    type="time"
+                    value={prayPlaceDetailEdit.placeClosingTime}
+                    onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, placeClosingTime: val }
+                      })
+                    }}
                     fullWidth
                   />
                 </Grid>
-                {/* <Grid item xs={6}>
-                  <TextField
-                    autoFocus
-                    margin="dense"
-                    label="Price Range"
-                    type="text"
-                    value={restaurantDetailEdit.placePriceRange}
-                    fullWidth
-                  />
-                </Grid> */}
                 <Grid item xs={6}>
                   <TextField
                     autoFocus
                     margin="dense"
                     label="Phone Number"
                     type="text"
-                    value={restaurantDetailEdit.placeTelno}
+                    value={prayPlaceDetailEdit.placeTelno}
+                    onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, placeTelno: val }
+                      })
+                    }}
                     fullWidth
                   />
                 </Grid>
-                {/* <Grid item xs={12}>
-                  <TextField
-                    autoFocus
-                    margin="dense"
-                    label="Link page"
-                    type="text"
-                    value={restaurantDetailEdit.placeLinkPage}
-                    fullWidth
-                  />
-                </Grid> */}
-                <Grid item xs={12}>
+                <Grid item xs={6}>
                   <TextField
                     autoFocus
                     margin="dense"
                     label="Location"
                     type="text"
-                    value={restaurantDetailEdit.latitude}
+                    value={prayPlaceDetailEdit.latitude}
+                    onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, latitude: val }
+                      })
+                    }}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Location"
+                    type="text"
+                    value={prayPlaceDetailEdit.longitude}
+                    onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, longitude: val }
+                      })
+                    }}
                     fullWidth
                   />
                 </Grid>
                 <Grid item xs={4}>
                   <FormControl className={classes.formControl} fullWidth>
                     <InputLabel>Car Parking</InputLabel>
-                    <Select value={restaurantDetailEdit.placeCarParking}>
+                    <Select value={prayPlaceDetailEdit.placeCarParking}  onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, placeCarParking: val }
+                      })
+                    }}>
                       <MenuItem value={0}>มี</MenuItem>
                       <MenuItem value={1}>ไม่มี</MenuItem>
                     </Select>
@@ -539,7 +893,12 @@ function PrayPlaceDetail()  {
                 <Grid item xs={4}>
                   <FormControl className={classes.formControl} fullWidth>
                       <InputLabel>Air Conditioner</InputLabel>
-                      <Select value={restaurantDetailEdit.placeAirconditioner}>
+                      <Select value={prayPlaceDetailEdit.placeAirconditioner}  onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, placeAirconditioner: val }
+                      })
+                    }}>
                         <MenuItem value={0}>มี</MenuItem>
                         <MenuItem value={1}>ไม่มี</MenuItem>
                       </Select>
@@ -548,37 +907,122 @@ function PrayPlaceDetail()  {
                 <Grid item xs={4}>
                   <FormControl className={classes.formControl} fullWidth>
                     <InputLabel>Pray Room</InputLabel>
-                    <Select value={restaurantDetailEdit.placePrayerRoom}>
+                    <Select value={prayPlaceDetailEdit.placePrayerRoom}  onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, placePrayerRoom: val }
+                      })
+                    }}>
                       <MenuItem value={0}>มี</MenuItem>
                       <MenuItem value={1}>ไม่มี</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
-                {/* <Grid item xs={6}>
+                <Grid item xs={4}>
                   <FormControl className={classes.formControl} fullWidth>
-                    <InputLabel>Pray Room</InputLabel>
-                    <Select value={restaurantDetailEdit.placePrayerRoom}>
-                      <MenuItem value={0}>มี</MenuItem>
-                      <MenuItem value={1}>ไม่มี</MenuItem>
+                    <InputLabel>Monday</InputLabel>
+                    <Select value={prayPlaceDetailEdit.Monday} onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, Monday: val }
+                      })
+                    }}>
+                      <MenuItem value={0}>เปิด</MenuItem>
+                      <MenuItem value={1}>ปิด</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={4}>
                   <FormControl className={classes.formControl} fullWidth>
-                    <InputLabel>Credit Card</InputLabel>
-                    <Select value={restaurantDetailEdit.placeCreditcard}>
-                      <MenuItem value={0}>มี</MenuItem>
-                      <MenuItem value={1}>ไม่มี</MenuItem>
+                    <InputLabel>Tuesday</InputLabel>
+                    <Select value={prayPlaceDetailEdit.Tuesday} onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, Tuesday: val }
+                      })
+                    }}>
+                      <MenuItem value={0}>เปิด</MenuItem>
+                      <MenuItem value={1}>ปิด</MenuItem>
                     </Select>
                   </FormControl>
-                </Grid> */}
+                </Grid>
+                <Grid item xs={4}>
+                  <FormControl className={classes.formControl} fullWidth>
+                    <InputLabel>Wednesday</InputLabel>
+                    <Select value={prayPlaceDetailEdit.Wednesday} onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, Wednesday: val }
+                      })
+                    }}>
+                      <MenuItem value={0}>เปิด</MenuItem>
+                      <MenuItem value={1}>ปิด</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={4}>
+                  <FormControl className={classes.formControl} fullWidth>
+                    <InputLabel>Thursday</InputLabel>
+                    <Select value={prayPlaceDetailEdit.Thursday} onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, Thursday: val }
+                      })
+                    }}>
+                      <MenuItem value={0}>เปิด</MenuItem>
+                      <MenuItem value={1}>ปิด</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={4}>
+                  <FormControl className={classes.formControl} fullWidth>
+                    <InputLabel>Friday</InputLabel>
+                    <Select value={prayPlaceDetailEdit.Friday} onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, Friday: val }
+                      })
+                    }}>
+                      <MenuItem value={0}>เปิด</MenuItem>
+                      <MenuItem value={1}>ปิด</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={4}>
+                  <FormControl className={classes.formControl} fullWidth>
+                    <InputLabel>Saturday</InputLabel>
+                    <Select value={prayPlaceDetailEdit.Saturday} onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, Saturday: val }
+                      })
+                    }}>
+                      <MenuItem value={0}>เปิด</MenuItem>
+                      <MenuItem value={1}>ปิด</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={4}>
+                  <FormControl className={classes.formControl} fullWidth>
+                    <InputLabel>Sunday</InputLabel>
+                    <Select value={prayPlaceDetailEdit.Sunday} onChange={(e)=> {
+                      const val = e.target.value;
+                      setprayPlaceDetailEdit(prevState => {
+                        return { ...prevState, Sunday: val }
+                      })
+                    }}>
+                      <MenuItem value={0}>เปิด</MenuItem>
+                      <MenuItem value={1}>ปิด</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
                 </Grid>
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleClose} color="primary">
                   Cancel
                 </Button>
-                <Button onClick={handleClose} color="primary">
+                <Button onClick={submitprayPlaceEdit} color="primary">
                   Submit
                 </Button>
               </DialogActions>
