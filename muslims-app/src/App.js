@@ -2,7 +2,8 @@ import React from "react";
 import {
   BrowserRouter as Router,
   Switch,
-  Route
+  Route,
+  Redirect
 } from "react-router-dom";
 
 import Index from "./page/index"
@@ -13,31 +14,54 @@ import Profile from "./page/profile"
 import PrayPlace from "./page/prayPlace";
 import PrayPlaceDetail from "./page/prayPlaceDetail";
 
+const AppState = {
+    loggedIn: false,
+    login: function(){
+        this.loggedIn = true;
+    },
+    logout: function(){
+        this.loggedIn = false;
+    }
+};
+
 export default function App() {
   return (
     <Router>
         <Switch>
-          <Route exact path="/">
-            <Index />
-          </Route>
+              <Route exact path="/">
+                {
+                  localStorage.getItem("userId") != null ? <Index /> : <Redirect to="/login"/>
+                }
+              </Route>
+              <Route path="/restaurant">
+                {
+                  localStorage.getItem("userId") != null ? <Restaurant /> : <Redirect to="/login"/>
+                }
+              </Route>
+              <Route path="/prayplace">
+                {
+                  localStorage.getItem("userId") != null ? <PrayPlace /> : <Redirect to="/login"/>
+                }
+              </Route>
+              <Route path="/restaurantDetail/:id">
+                {
+                  localStorage.getItem("userId") != null ? <RestaurantDetail /> : <Redirect to="/login"/>
+                }
+              </Route>
+              <Route path="/prayplaceDetail/:id">
+                {
+                  localStorage.getItem("userId") != null ? <PrayPlaceDetail /> : <Redirect to="/login"/>
+                }
+              </Route>
+              <Route path="/profile">
+                {
+                  localStorage.getItem("userId") != null ? <Profile /> : <Redirect to="/login"/>
+                }
+              </Route>
           <Route path="/login">
             <Login />
           </Route>
-          <Route path="/restaurant">
-            <Restaurant />
-          </Route>
-          <Route path="/prayplace">
-            <PrayPlace />
-          </Route>
-          <Route path="/restaurantDetail/:id">
-            <RestaurantDetail />
-          </Route>
-          <Route path="/prayplaceDetail/:id">
-            <PrayPlaceDetail />
-          </Route>
-          <Route path="/profile">
-            <Profile />
-          </Route>
+          <Route render={ () => <h1>404 Error</h1> } />
         </Switch>
     </Router>
   );
