@@ -24,7 +24,7 @@ function index () {
               aria-label="large contained secondary button group"
             >
                 <Button onClick={()=>{changePage('/restaurant')}} style={{backgroundColor:'#CC6633'}}>Restaurant</Button>
-                <Button onClick={()=>{changePage('/')}} style={{backgroundColor:'#CC6633'}}>Pray Place</Button>
+                <Button onClick={()=>{changePage('/prayplace')}} style={{backgroundColor:'#CC6633'}}>Pray Place</Button>
                 <Button onClick={()=>{changePage('/')}} style={{backgroundColor:'#CC6633'}}>History</Button>
               </ButtonGroup>
             </Grid>
