@@ -76,7 +76,7 @@ function Profile() {
                       <Typography variant="body2" color="textPrimary" component="p">
                         <center><h4 style={{backgroundColor:"#FFCC66",width:70,height:20,padding:1 ,borderRadius: 63}}>ADMIN</h4></center>
                       </Typography>
-                      <Button variant="contained" color="primary">
+                      <Button variant="contained" color="primary" onClick={()=>{localStorage.clear(); window.location.replace("/login");}}>
                         Logout
                       </Button>
                     </CardContent>
