@@ -44,6 +44,10 @@ function AppBars () {
         setUserData(response.data[0]);
     } 
 
+    const changePage = (page) => {
+        window.location.replace(page)
+      }
+
     useEffect(()=>{
         getUser();
     },[]);
@@ -52,13 +56,13 @@ function AppBars () {
         <div className={classes.root}>
             <AppBar position="static" style={{backgroundColor:'#282c34'}}>
                 <Toolbar>
-                <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={()=>{changePage('/')}}>
                     <img src="../images/admin-web.png" style={{height:60}} alt="index_logo" />
                 </IconButton>
                 <Typography variant="h6" className={classes.title}>
                     muslimdailylifeadmin
                 </Typography>
-                <Button color="inherit">
+                <Button color="inherit" onClick={()=>{changePage('/profile')}}>
                     <Avatar src={userData.userImage} height="33px" alt="user"/> &nbsp; {userData.userFName}  {userData.userLName}
                 </Button>
                 </Toolbar>
