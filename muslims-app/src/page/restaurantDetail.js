@@ -34,12 +34,17 @@ import Grid from '@material-ui/core/Grid';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
+import StarBorderIcon from '@material-ui/icons/StarBorder';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-
-
+import ImageUpload from '../ImageUpload'
 import { useParams } from "react-router-dom";
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import GridListTileBar from '@material-ui/core/GridListTileBar';
+import DeleteForever from '@material-ui/icons/DeleteForever';
+import IconButton from '@material-ui/core/IconButton';
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -62,7 +67,26 @@ const useStyles = makeStyles((theme) =>
     },
     selectEmpty: {
       marginTop: theme.spacing(2),
-    }
+    },
+    title: {
+      color: theme.palette.primary.light,
+    },
+    titleBar: {
+      background:
+        'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+    },
+    root: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      justifyContent: 'space-around',
+      overflow: 'hidden',
+      backgroundColor: theme.palette.background.paper,
+    },
+    gridList: {
+      flexWrap: 'nowrap',
+      // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
+      transform: 'translateZ(0)',
+    },
   }),
 );
 
@@ -139,6 +163,12 @@ function RestaurantDetail()  {
           categoryId:1,
           categoryName:[]
         }]
+      )
+
+      const[getPicture,setGetPicture] = useState(
+        {
+          pictures:[]
+        }
       )
 
       const getDetail = async () =>{
@@ -220,6 +250,10 @@ function RestaurantDetail()  {
       const handleClose = () => {
         setOpen(false);
       };
+
+      const onDrop = (picture) => {
+        setGetPicture(picture)
+      }
 
       useEffect(()=>{
         getDetail();
@@ -420,13 +454,39 @@ function RestaurantDetail()  {
               }
             </ListItem>
             <Divider/>
+              <ListItem>
+              <Grid item xs={10}>
+              </Grid>
+              <Grid item xs={2}>
+                <Button variant="contained" color="primary">
+                  add image
+                </Button>
+                </Grid>
+              </ListItem>
             <ListItem >
-              <Typography className={classes.heading}> <LocationOn/> Image: </Typography>
-              {
-                restaurantImage.map( data =>
-                <img src={data.imageName} style={{width:200,height:150, marginRight:10}} />
-              )}
-            </ListItem>
+            <GridList className={classes.gridList} cols={2.5}>
+              {restaurantImage.map(data => (
+                <GridListTile key={data.imageId}>
+                  <img src={data.imageName}/>
+                  <GridListTileBar
+                    title="DELETE"
+                    classes={{
+                      root: classes.titleBar,
+                      title: classes.title,
+                    }}
+                    actionIcon={
+                      <IconButton>
+                        <StarBorderIcon className={classes.title} />
+                      </IconButton>
+                    }
+                  />
+                </GridListTile>
+              ))}
+                </GridList>
+                </ListItem>
+                <ListItem>
+                  <ImageUpload/>
+                </ListItem>
           </List>
         </Container>
         <center>
@@ -646,6 +706,9 @@ function RestaurantDetail()  {
                       <MenuItem value={1}>ปิด</MenuItem>
                     </Select>
                   </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                <ImageUpload />
                 </Grid>
                 </Grid>
               </DialogContent>
